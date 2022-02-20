@@ -1,5 +1,6 @@
 import pygame
 from random import randint
+from pygame import mixer
 
 # Initialisation
 pygame.init()
@@ -11,8 +12,12 @@ screen = pygame.display.set_mode((800, 600))  # Attention à bien rentrer un tup
 pygame.display.set_caption("Space invaders")
 icon = pygame.image.load("fleche.jpg")
 pygame.display.set_icon(icon)
+
 # Initialisation du fond d'écran
 background = pygame.image.load("background.jpg")
+# Initialisation de la musique de fond
+mixer.music.load("background.wav")
+mixer.music.play(-1)
 
 # Joueur
 player_img = pygame.image.load("space-invaders.png")
@@ -87,6 +92,8 @@ while running:
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 x_change = 1.5
             if event.key == pygame.K_SPACE and bullet_state == "ready":
+                bullet_sound = mixer.Sound("laser.wav")
+                bullet_sound.play()
                 fire_bullet(player_x, bullet_y)
                 bullet_x = player_x
 
@@ -146,6 +153,8 @@ while running:
         if enemy_x[i] <= bullet_x <= enemy_x[i] + 64 and enemy_y[i] + 64 >= bullet_y >= enemy_y[i]:
             enemy_x[i] = randint(0, 800 - 64)
             enemy_y[i] = randint(50, 150)
+            explosion_sound = mixer.Sound("explosion.wav")
+            explosion_sound.play()
             bullet_y = player_y
             bullet_state = "ready"
             score_value += 1
