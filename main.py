@@ -99,7 +99,7 @@ while running:
                 fire_bullet(player_x, bullet_y)
                 bullet_x = player_x
 
-            # On quitte le programme e appuyant sur escape
+            # On quitte le programme en appuyant sur escape
             elif event.key == pygame.K_ESCAPE:
                 running = False
 
