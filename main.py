@@ -20,26 +20,44 @@ player_x = 368
 player_y = 500
 x_change = 0
 
-# Ennemi
-enemy_img = pygame.image.load("enemy.png")
-enemy_x = randint(0, 800 - 64)
-enemy_y = randint(50, 150)
-enemy_x_change = 0.4
+# Enemies
+enemy_img = []
+enemy_x = []
+enemy_y = []
+enemy_x_change = []
+nb_of_enemies = 6
+
+for i in range(nb_of_enemies):
+    enemy_img.append(pygame.image.load("enemy.png"))
+    enemy_x.append(randint(0, 800 - 64))
+    enemy_y.append(randint(50, 150))
+    enemy_x_change.append(1)
 
 # Balle
 bullet_img = pygame.image.load("bullet.png")
-bullet_x = 0
-bullet_y = 0
-bullet_y_change = 0.4
+bullet_x = player_x
+bullet_y = player_y
+bullet_y_change = 2
 bullet_state = "ready"  # "Ready" = Pas encore tiré / "Fired" = Sur l'écran
+
+score_value = 0
+font = pygame.font.Font("freesansbold.ttf", 32)
+
+scoreX = 15
+scoreY = 15
+
+
+def show_score(x, y):
+    score = font.render("Score : " + str(score_value), True, (255, 255, 255))
+    screen.blit(score, (x, y))
 
 
 def player(x, y):
     screen.blit(player_img, (x, y))
 
 
-def enemy(x, y):
-    screen.blit(enemy_img, (x, y))
+def enemy(x, y, i):
+    screen.blit(enemy_img[i], (x, y))
 
 
 def fire_bullet(x, y):
@@ -63,11 +81,12 @@ while running:
         # Lorsque les flèches sont pressées
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_q:
-                x_change = -0.5
+                x_change = -1.5
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                x_change = 0.5
+                x_change = 1.5
             if event.key == pygame.K_SPACE and bullet_state == "ready":
-                fire_bullet(player_x, player_y)
+                fire_bullet(player_x, bullet_y)
+                bullet_x = player_x
 
             # On quitte le programme e appuyant sur escape
             elif event.key == pygame.K_ESCAPE:
@@ -82,27 +101,50 @@ while running:
 
     # Modification de la position
     player_x += x_change
+
     if player_x <= 0:
         player_x = 0
     elif player_x >= 800 - 64:  # Taille horizontale de l'écran - Taille horizontale de l'image
         player_x = 800 - 64
 
-    enemy_x += enemy_x_change
+    # Modification de la position de l'ennemi
+    for i in range(nb_of_enemies):
+        enemy_x[i] += enemy_x_change[i]
 
-    if enemy_x <= 0:
-        enemy_x_change = 0.4
-        enemy_x = 0
-        enemy_y += 64
-    elif enemy_x >= 800 - 64:
-        enemy_x = 800 - 64
-        enemy_x_change = -0.4
-        enemy_y += 40
+        if enemy_x[i] <= 0:
+            enemy_x_change[i] = 1
+            enemy_x[i] = 0
+            enemy_y[i] += 64
+        elif enemy_x[i] >= 800 - 64:
+            enemy_x[i] = 800 - 64
+            enemy_x_change[i] = -1
+            enemy_y[i] += 40
+
+    # Tirs multiples
+    if bullet_y <= 0:
+        bullet_y = player_y
+        bullet_state = "ready"
 
     if bullet_state == "fire":
+        fire_bullet(bullet_x, bullet_y)
         bullet_y -= bullet_y_change
-        fire_bullet(player_x, player_y)
+
+    # Si il y a une collision entre une balle et un ennemi
+    for i in range(nb_of_enemies):
+        if enemy_x[i] <= bullet_x <= enemy_x[i] + 64 and enemy_y[i] + 64 >= bullet_y >= enemy_y[i]:
+            enemy_x[i] = randint(0, 800 - 64)
+            enemy_y[i] = randint(50, 150)
+            bullet_y = player_y
+            bullet_state = "ready"
+            score_value += 1
+            print(score_value)
 
     player(player_x, player_y)
-    enemy(enemy_x, enemy_y)
+    for i in range(nb_of_enemies):
+        enemy(enemy_x[i], enemy_y[i], i)
+
+    # Affichage du score
+
+    show_score(scoreX, scoreY)
 
     pygame.display.update()
