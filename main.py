@@ -46,6 +46,8 @@ font = pygame.font.Font("freesansbold.ttf", 32)
 scoreX = 15
 scoreY = 15
 
+hit = False
+
 
 def show_score(x, y):
     score = font.render("Score : " + str(score_value), True, (255, 255, 255))
@@ -109,16 +111,26 @@ while running:
 
     # Modification de la position de l'ennemi
     for i in range(nb_of_enemies):
-        enemy_x[i] += enemy_x_change[i]
+        if not hit:
+            enemy_x[i] += enemy_x_change[i]
 
-        if enemy_x[i] <= 0:
-            enemy_x_change[i] = 1
-            enemy_x[i] = 0
-            enemy_y[i] += 64
-        elif enemy_x[i] >= 800 - 64:
-            enemy_x[i] = 800 - 64
-            enemy_x_change[i] = -1
-            enemy_y[i] += 40
+            if enemy_x[i] <= 0:
+                enemy_x_change[i] = 1
+                enemy_x[i] = 0
+                enemy_y[i] += 64
+            elif enemy_x[i] >= 800 - 64:
+                enemy_x[i] = 800 - 64
+                enemy_x_change[i] = -1
+                enemy_y[i] += 40
+
+    # Affichage des ennemis
+    for i in range(nb_of_enemies):
+        if not hit:
+            enemy(enemy_x[i], enemy_y[i], i)
+
+    # Affiche le joueur
+    if not hit:
+        player(player_x, player_y)
 
     # Tirs multiples
     if bullet_y <= 0:
@@ -129,7 +141,7 @@ while running:
         fire_bullet(bullet_x, bullet_y)
         bullet_y -= bullet_y_change
 
-    # Si il y a une collision entre une balle et un ennemi
+    # S'il y a une collision entre une balle et un ennemi
     for i in range(nb_of_enemies):
         if enemy_x[i] <= bullet_x <= enemy_x[i] + 64 and enemy_y[i] + 64 >= bullet_y >= enemy_y[i]:
             enemy_x[i] = randint(0, 800 - 64)
@@ -137,14 +149,16 @@ while running:
             bullet_y = player_y
             bullet_state = "ready"
             score_value += 1
-            print(score_value)
 
-    player(player_x, player_y)
     for i in range(nb_of_enemies):
-        enemy(enemy_x[i], enemy_y[i], i)
+        if (player_x <= enemy_x[i] <= player_x + 64) and (player_y <= enemy_y[i] + 64 <= player_y + 64):  # S'il entre en collision avec le joueur
+            hit = True
 
     # Affichage du score
 
-    show_score(scoreX, scoreY)
+    if not hit:  # Si le joueur n'a pas encore été touché
+        show_score(scoreX, scoreY)
+    else:
+        show_score(350, 250)
 
     pygame.display.update()
