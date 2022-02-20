@@ -1,5 +1,5 @@
 import pygame
-from random import randint
+from random import choice
 from pygame import mixer
 
 # Initialisation
@@ -32,15 +32,18 @@ enemy_y = []
 enemy_x_change = []
 nb_of_enemies = 6
 
+enemies_x_positions = [x for x in range(0, 800, 64)]
+enemies_y_positions = [y for y in range(0, 200, 64)]
+
 for i in range(nb_of_enemies):
     enemy_img.append(pygame.image.load("enemy.png"))
-    enemy_x.append(randint(0, 800 - 64))
-    enemy_y.append(randint(50, 150))
+    enemy_x.append(choice(enemies_x_positions))
+    enemy_y.append(choice(enemies_y_positions))
     enemy_x_change.append(1)
 
 # Balle
 bullet_img = pygame.image.load("bullet.png")
-bullet_x = player_x
+bullet_x = player_x + 1
 bullet_y = player_y
 bullet_y_change = 2
 bullet_state = "ready"  # "Ready" = Pas encore tiré / "Fired" = Sur l'écran
@@ -54,9 +57,8 @@ scoreY = 15
 hit = False
 
 
-def show_score(x, y):
-    score = font.render("Score : " + str(score_value), True, (255, 255, 255))
-    screen.blit(score, (x, y))
+def show_score(text, x, y):
+    screen.blit(text, (x, y))
 
 
 def player(x, y):
@@ -151,8 +153,8 @@ while running:
     # S'il y a une collision entre une balle et un ennemi
     for i in range(nb_of_enemies):
         if enemy_x[i] <= bullet_x <= enemy_x[i] + 64 and enemy_y[i] + 64 >= bullet_y >= enemy_y[i]:
-            enemy_x[i] = randint(0, 800 - 64)
-            enemy_y[i] = randint(50, 150)
+            enemy_x[i] = choice(enemies_x_positions)
+            enemy_y[i] = choice(enemies_y_positions)
             explosion_sound = mixer.Sound("explosion.wav")
             explosion_sound.play()
             bullet_y = player_y
@@ -166,8 +168,13 @@ while running:
     # Affichage du score
 
     if not hit:  # Si le joueur n'a pas encore été touché
-        show_score(scoreX, scoreY)
+        show_score(font.render("Score : " + str(score_value), True, (255, 255, 255)), scoreX, scoreY)
     else:
-        show_score(350, 250)
+        show_score(font.render("Best score : " + str(score_value), True, (200, 200, 200)), 325, 275)
+
+    # Arrêt de la musique
+
+    if hit:
+        mixer.music.stop()
 
     pygame.display.update()
